@@ -32,7 +32,7 @@ const RecruiterLogin = () => {
         <h1 className="text-center text-2xl text-neutral-700 font-medium">
           Recruiter {state}
         </h1>
-        <p className="text-sm">Welcome back! Please sign in to continue</p>
+        <p className="text-sm">Welcome back! Please {state} to continue</p>
         {state === "Sign Up" && isTextDataSubmited ? (
           <>
           <div className="flex items-center gap-4 my-10">
