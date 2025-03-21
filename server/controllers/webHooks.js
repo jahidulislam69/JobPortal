@@ -5,7 +5,7 @@ import User from '../models/User.js'
 export const clerkWebhooks = async (req,res)=> {
     try {
         // CREATE a svix instance with clerk webhook secret.
-        const whook = new Webhook (process.env.CLERK_WEBHOOKS_SECRET)
+        const whook = new Webhook(process.env.CLERK_WEBHOOKS_SECRET)
         // Verifying headers 
         await whook.verify(JSON.stringify(req.body),{
             "svix-id": req.headers["svix-id"],
@@ -20,21 +20,24 @@ export const clerkWebhooks = async (req,res)=> {
         // Switch cases for different events
         switch (type) {
             case 'user.created':{
-                const userData = {
-                    _id: data.id,
-                    email: data.email_addresses[0].email_addresses,
-                    name: data.first_name +" "+data.last_name,
-                    image: data.image_url,
-                    resume: ''
+                const existingUser = await User.findById(data.id);
+                if (!existingUser) {
+                    const userData = {
+                        _id: data.id,
+                        email: data.email_addresses[0].email,
+                        name: data.first_name +" "+data.last_name,
+                        image: data.image_url,
+                        resume: ''
+                    }
+                    await User.create(userData)
                 }
-                await User.create(userData)
                 res.json({})
                 break;
                 
             }
             case 'user.updated':{
                 const userData = {
-                    email: data.email_addresses[0].email_addresses,
+                    email: data.email_addresses[0].email,
                     name: data.first_name +" "+data.last_name,
                     image: data.image_url,
                 }
