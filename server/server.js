@@ -20,7 +20,7 @@ await connectDB()
 ///routes
 
 app.get('/',(req,res)=> res.send("Api Working"))
-app.post('/webhook', clerkWebhooks)
+app.post('/webhooks', clerkWebhooks)
 
 
 // The error handler must be registered before any other error middleware and after all controllers
