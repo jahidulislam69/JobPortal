@@ -18,6 +18,8 @@ export const clerkWebhooks = async (req,res)=> {
         })
         
         console.log("Webhook verified successfully");
+        console.log("");
+        
         
         // Getting data from request body
         const {data, type} = req.body
@@ -27,13 +29,25 @@ export const clerkWebhooks = async (req,res)=> {
             case 'user.created':{
                 const existingUser = await User.findById(data.id);
                 if (!existingUser) {
+                    // Check if email_addresses array exists and has at least one element
+                    const email = data.email_addresses && data.email_addresses.length > 0 
+                        ? data.email_addresses[0].email_address  // This is the correct property name
+                        : null;
+                        
+                    if (!email) {
+                        console.log("No email found in user data:", data);
+                        return res.status(400).json({ success: false, message: "No email found in user data" });
+                    }
+                    
                     const userData = {
                         _id: data.id,
-                        email: data.email_addresses[0].email,
-                        name: data.first_name +" "+data.last_name,
+                        email: email,  // Use the extracted email
+                        name: data.first_name + " " + data.last_name,
                         image: data.image_url,
                         resume: ''
                     }
+                    
+                    console.log("Creating user with data:", userData);
                     await User.create(userData)
                 }
                 res.json({})
@@ -41,12 +55,24 @@ export const clerkWebhooks = async (req,res)=> {
                 
             }
             case 'user.updated':{
+                // Similar fix for the update case
+                const email = data.email_addresses && data.email_addresses.length > 0 
+                    ? data.email_addresses[0].email_address
+                    : null;
+                    
+                if (!email) {
+                    console.log("No email found in user data:", data);
+                    return res.status(400).json({ success: false, message: "No email found in user data" });
+                }
+                
                 const userData = {
-                    email: data.email_addresses[0].email,
-                    name: data.first_name +" "+data.last_name,
+                    email: email,
+                    name: data.first_name + " " + data.last_name,
                     image: data.image_url,
                 }
-                await User.findByIdAndUpdate(data.id,userData)
+                
+                console.log("Updating user with data:", userData);
+                await User.findByIdAndUpdate(data.id, userData)
                 res.json({})
                 break;
             }
