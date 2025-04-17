@@ -7,7 +7,7 @@ const JobListing = () => {
 
     const {isSearched, searchFilter, setSearchFilter, jobs} = useContext(AppContext)
 
-    const [showFilter, setShowFilter] = useState(true)
+    const [showFilter, setShowFilter] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedCategories, setSelectedCategories] = useState([])
     const [selectedLocations, setSelectedLocations] = useState([])
