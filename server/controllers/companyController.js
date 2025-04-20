@@ -1,4 +1,5 @@
 import Company from "../models/Company.js";
+import JobApplications from "../models/JobApplications.js";
 import bcrypt from 'bcrypt'
 import {v2 as cloudinary} from 'cloudinary'
 import generateToken from "../utils/generateToken.js";
@@ -150,8 +151,14 @@ export const getCompanyPostedJobs = async (req,res)=>{
     try {
         const companyId = req.company._id
         const jobs = await Job.find({companyId})
-        // (toDo) adding o. of applicants info in data
-        res.json({success:true, jobsData:jobs})
+        // adding o. of applicants info in data
+
+        const jobsData = await Promise.all(jobs.map(async (job)=>{
+            const applicants = await JobApplications.find({jobId:job._id})
+            return {...job.toObject(),applicants:applicants.length}
+        }))
+
+        res.json({success:true, jobsData})
     } catch (error) {
         res.json({ success: false, message: error.message });
 
@@ -182,7 +189,7 @@ export const changeVisibility = async (req,res)=>{
 
         const job = await Job.findById(id)
 
-        if(compnayId.toString()=== job.companyId.toString()){
+        if(companyId.toString()=== job.companyId.toString()){
            job.visible = !job.visible 
         }
         await job.save()

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext'
 import Loading from '../components/Loading'
 import Navbar from '../components/Navbar'
@@ -8,37 +8,67 @@ import Footer from '../components/Footer'
 import { assets } from '../assets/assets'
 import kconvert from 'k-convert'
 import moment from 'moment'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { useAuth } from '@clerk/clerk-react'
 
 
 const ApplyJob = () => {
-
+  const navigate = useNavigate()
+  const {getToken} = useAuth()
   const { id } = useParams()
 
   const [jobData, setJobData] = useState(null)
-  const { jobs } = useContext(AppContext)
+
+  const { jobs, backendUrl, userData, userApplications } = useContext(AppContext)
+
   const fetchJob = async () => {
-    const data = jobs.filter(job => (job._id) === (id))
-    if (data.length !== 0) {
-      setJobData(data[0])
-      console.log(data[0]);
+    try {
+      const { data } = await axios.get(backendUrl + `/api/jobs/${id}`)  // Added await here
+      if (data && data.success) {
+        setJobData(data.job)
+      } else {
+        toast.error(data.message)
+      }
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+  const applyHandler = async ()=>{
+    try {
+      
+      if(!userData){
+        return toast.error('Login to apply for jobs')
+      }
+      if (!userData.resume){
+        navigate('/applications')
+        return toast.error('Upload resume to apply')
+      }
+      const token = await getToken()
+      const {data}= await axios.post(backendUrl+`/api/users/apply`,
+        {jobId: jobData._id},
+        {headers: {Authorization: `Bearer ${token}`}}
+      )
+      if (data && data.success){
+        toast.success(data.message)
+      } else{
+        toast.error(data.error)
+      }
+
+    } catch (error) {
+      toast.error(error.message)
     }
   }
 
   useEffect(() => {
-    if (jobs.length > 0) {
-      fetchJob()
-    }
-  }, [id, jobs])
+    fetchJob()
+  }, [id])
 
 
 
   return jobData ? (
     <>
       <Navbar />
-
-
-
-
       <div className='min-h-screen flex flex-col py-10 container px-4 2xl:px-20 mx-auto'>
         <div className='bg-white text-black rounded-lg w-full'>
           <div className='flex justify-center md:justify-between flex-wrap gap-8 px-14 py-20 mb-6 bg-sky-50 border border-sky-400 rounded-xl'>
@@ -68,7 +98,7 @@ const ApplyJob = () => {
             </div>
 
             <div className='flex flex-col justify-center text-end text-sm max-md:mx-auto max-md:text-center'>
-              <button className='bg-blue-600 p-2.5 px-10 text-white rounded'>Apply Now</button>
+              <button onClick={applyHandler} className='bg-blue-600 p-2.5 px-10 text-white rounded'>Apply Now</button>
               <p className='mt-1 text-gray-600'>Posted {moment(jobData.data).fromNow()}</p>
             </div>
 
@@ -78,7 +108,7 @@ const ApplyJob = () => {
           <div className='w-full lg:w-2/3'>
             <h2 className='font-bold text-2xl mb-4'>Job Description</h2>
             <div className='rich-text' dangerouslySetInnerHTML={{ __html: jobData.description }}></div>
-            <button className='bg-blue-600 p-2.5 px-10 text-white rounded mt-10'>Apply Now</button>
+            <button onClick={applyHandler} className='bg-blue-600 p-2.5 px-10 text-white rounded mt-10'>Apply Now</button>
           </div>
           {/* Right Section More Jobs */}
           <div className='w-full lg:w-1/3 mt-8 lg:mt-0 lg:ml-8 space-y-5'>

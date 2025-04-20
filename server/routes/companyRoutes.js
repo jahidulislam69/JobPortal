@@ -40,7 +40,7 @@ router.post('/change-status',protectCompany, changeJobApplicationsStatus)
 
 // change applications visibility
 
-router.post('/ ',protectCompany, changeVisibility)
+router.post('/change-visibility',protectCompany, changeVisibility)
 
 export default router;
 

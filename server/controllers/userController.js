@@ -75,20 +75,21 @@ export const getUserJobApplications = async (req,res)=>{
 export const updateUserResume = async (req,res)=>{
     try {
         const userId = req.auth.userId
-
-        const resumeFile = req.resumeFile
+        const resumeFile = req.file
 
         const userData = await User.findById(userId)
         if(resumeFile) {
-            const resumeUpload = await cloudinary.resumeUploder.upload(resumeFile.path)
-            userData.resume = resumeUploda.secure_url
+            const resumeUpload = await cloudinary.uploader.upload(resumeFile.path, {
+                resource_type: 'raw',
+                folder: 'resumes'
+            })
+            userData.resume = resumeUpload.secure_url
         }
 
         await userData.save()
-        return res.json({uccess:false, message: 'Resume updated'})
+        return res.json({success: true, message: 'Resume updated'})
     } catch (error) {
         res.json({success:false, message: error.message})
-
     }
 }
 

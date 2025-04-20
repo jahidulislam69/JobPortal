@@ -16,42 +16,61 @@ const RecruiterLogin = () => {
   const [image, setImage] = useState(false);
   const [isTextDataSubmited, setisTextDataSubmited] = useState(false);
 
-  const {setShowRecruiterLogin, backendUrl, setCompanyToken, setCompanyData}=useContext(AppContext)
+  const { setShowRecruiterLogin, backendUrl, setCompanyToken, setCompanyData } = useContext(AppContext)
 
   const onSubmitHandler = async (e) => {
     e.preventDefault()
 
-    if(state == 'Sign Up' && !isTextDataSubmited) {
-        setisTextDataSubmited(true)
+    if (state == 'Sign Up' && !isTextDataSubmited) {
+      return setisTextDataSubmited(true)
     }
 
     try {
-      if(state === 'Login'){
-        const {data} = await axios.post(backendUrl + '/api/company/login', {email,password})
+      if (state === 'Login') {
+        const { data } = await axios.post(backendUrl + '/api/company/login', { email, password })
 
-        if(data.success){
-          
+        if (data.success) {
+
           setCompanyData(data.company)
           setCompanyToken(data.token)
           localStorage.setItem('companyToken', data.token)
           setShowRecruiterLogin(false)
           navigate('/dashboard')
-        } else{
+        } else {
+          toast.error(data.message)
+        }
+      } else {
+        // Handle Sign Up logic here
+
+        const formData = new FormData()
+        formData.append('name', name)
+        formData.append('password', password)
+        formData.append('email', email)
+        formData.append('image', image)
+
+        const { data } = await axios.post(backendUrl + '/api/company/register', formData)
+        if (data.success) {
+          setCompanyData(data.company)
+          setCompanyToken(data.token)
+          localStorage.setItem('companyToken', data.token)
+          setShowRecruiterLogin(false)
+          navigate('/dashboard')
+        } else {
           toast.error(data.message)
         }
       }
     } catch (error) {
-      
+      toast.error(error.message);
     }
   }
 
 
-  useEffect(()=>{
+  useEffect(() => {
     document.body.style.overflow = 'hidden'
-    return ()=> {
-        document.body.style.overflow = 'unset'
+    return () => {
+      document.body.style.overflow = 'unset'
     }
-  },[])
+  }, [])
 
   return (
     <div className="absolute top-0 left-0 right-0 bottom-0 z-10 backdrop-blur-sm bg-black/30 flex justify-center items-center">
@@ -62,13 +81,13 @@ const RecruiterLogin = () => {
         <p className="text-sm">Welcome back! Please {state} to continue</p>
         {state === "Sign Up" && isTextDataSubmited ? (
           <>
-          <div className="flex items-center gap-4 my-10">
-            <label  htmlFor="image">
+            <div className="flex items-center gap-4 my-10">
+              <label htmlFor="image">
                 <img className="w-16 rounded-full" src={image ? URL.createObjectURL(image) : assets.upload_area} alt="" />
-                <input onChange={e=> setImage(e.target.files[0])} type="file" id='image' hidden />
-            </label>
-            <p>Upload Company <br /> Logo</p>
-          </div>
+                <input onChange={e => setImage(e.target.files[0])} type="file" id='image' hidden />
+              </label>
+              <p>Upload Company <br /> Logo</p>
+            </div>
           </>
         ) : (
           <>
@@ -108,10 +127,10 @@ const RecruiterLogin = () => {
                 required
               />
             </div>
-            
+
           </>
         )}
-        {state === "Login" &&  <p className="text-sm text-blue-600 mt-4 cursor-pointer">Forgot Password?</p>}
+        {state === "Login" && <p className="text-sm text-blue-600 mt-4 cursor-pointer">Forgot Password?</p>}
         <button type="submit" className="bg-blue-600 w-full text-white py-2 rounded-full mt-2 ">
           {state === "Login" ? "Login" : isTextDataSubmited ? "Create Account" : "Next"}
         </button>
@@ -137,7 +156,7 @@ const RecruiterLogin = () => {
           </p>
         )}
 
-        <img onClick={e=> setShowRecruiterLogin(prev => !prev)} className="absolute top-5 right-5 cursor-pointer" src={assets.cross_icon} alt="" />
+        <img onClick={e => setShowRecruiterLogin(prev => !prev)} className="absolute top-5 right-5 cursor-pointer" src={assets.cross_icon} alt="" />
 
       </form>
     </div>
