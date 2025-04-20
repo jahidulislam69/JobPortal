@@ -4,6 +4,7 @@ import bcrypt from 'bcrypt'
 import {v2 as cloudinary} from 'cloudinary'
 import generateToken from "../utils/generateToken.js";
 import Job from '../models/Job.js'
+import JobApplication from "../models/JobApplications.js";
 
 
 
@@ -136,7 +137,15 @@ export const postJob = async (req,res)=>{
  */
 export const getCompanyJobApplicants = async (req,res)=>{
     try {
-        
+        const companyId = req.company._id
+
+        // Find job applications for the user and populate related data
+        const applications = await JobApplication.find({companyId})
+        .populate('userId', 'name image resume')
+        .populate('jobId', 'title location category level salary')
+        .exec()
+
+        return res.json({success:true, applications})
     } catch (error) {
         res.json({ success: false, message: error.message });
 
@@ -171,10 +180,12 @@ export const getCompanyPostedJobs = async (req,res)=>{
  */
 export const changeJobApplicationsStatus = async (req,res)=>{
     try {
-        
+        const {id, status} = req.body
+        //Find job application and update
+        await JobApplication.findOneAndUpdate({_id: id}, {status})
+        res.json({success: true, message: "Status changed"})
     } catch (error) {
         res.json({ success: false, message: error.message });
-
     }
 }
 
