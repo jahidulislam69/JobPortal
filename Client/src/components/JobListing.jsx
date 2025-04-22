@@ -2,10 +2,13 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../context/AppContext'
 import { assets, JobCategories, JobLocations } from '../assets/assets'
 import JobCard from './JobCard'
+import Loading from './Loading'
+
+
 
 const JobListing = () => {
 
-    const {isSearched, searchFilter, setSearchFilter, jobs} = useContext(AppContext)
+    const {isSearched, searchFilter, setSearchFilter, jobs, isLoading} = useContext(AppContext)
 
     const [showFilter, setShowFilter] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
@@ -117,9 +120,20 @@ const JobListing = () => {
             <h3 className='font-medium text-3xl py-2 px-2' id='job-list'>Latest Jobs</h3>
             <p className='mb-8 px-2'>Get your desired job from top companies</p>
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                {filteredJobs.slice((currentPage-1)*6, currentPage*6).map((job,index)=>(
+                {isLoading ? (
+                    Array(6).fill().map((_, index) => (
+                        <div key={index} className="animate-pulse">
+                            <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                        </div>
+                    ))
+                ) : (
+                    filteredJobs.slice((currentPage-1)*6, currentPage*6).map((job,index)=>(
                         <JobCard key={index} job={job}/>
-                    ))}
+                    ))
+                )}
             </div>
 
 
