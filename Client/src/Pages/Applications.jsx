@@ -15,7 +15,7 @@ const Applications = () => {
 
   const [isEdit, setIsEdit] = useState(false)
   const [resume, setResume] = useState(null)
-  const { backendUrl, userData, userApplications, fetchUserApplications} = useContext(AppContext)
+  const { backendUrl, userData, userApplications,fetchUserData, fetchUserApplications} = useContext(AppContext)
 
   const upadateResume = async () => {
     try {
@@ -32,6 +32,7 @@ const Applications = () => {
       if (data.success) {
         toast.success(data.message)
         await fetchUserData()
+        await fetchUserApplications()
       } else {
         toast.error(data.message)
       }
